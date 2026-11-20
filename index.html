@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Il tuo Nome · Dashboard Power BI</title>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header><div class="wrap"><a class="logo" href="/">Il tuo Nome</a><a href="mailto:tua@email.it">Contatti</a></div></header>
+<main class="wrap">
+  <h1>Trasformo i dati in dashboard che si leggono in dieci secondi.</h1>
+  <p class="sub">Analista dati con Power BI. Nei progetti spiego obiettivo, dati usati e cosa hanno scoperto.</p>
+  <section id="accesso">
+    <h2>Entra per vedere i progetti</h2>
+    <form class="gate" id="gate">
+      <label for="email">La tua email</label>
+      <input id="email" type="email" required autocomplete="email" placeholder="nome@azienda.it">
+      <button class="btn" type="submit">Entra</button>
+      <small id="msg" role="status">Se sei già qualificato entri subito, altrimenti ti mando un link di attivazione.</small>
+    </form>
+  </section>
+</main>
+<footer><div class="wrap">© 2026 Il tuo Nome</div></footer>
+<script>
+document.getElementById('gate').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('msg');
+  msg.textContent = 'Invio in corso…';
+  try {
+    const r = await fetch('/api/richiedi', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: document.getElementById('email').value })
+    });
+    const d = await r.json();
+    if (d.entrato) { window.location.href = '/progetti'; return; }
+    msg.textContent = d.ok ? 'Ti ho mandato il link di attivazione: controlla la posta (anche lo spam).' : 'Non sono riuscito a completare la richiesta. Riprova.';
+  } catch { msg.textContent = 'Errore di connessione. Riprova.'; }
+});
+</script>
+</body>
+</html>
