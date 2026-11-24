@@ -1,6 +1,6 @@
 // Riceve l'email: se è già qualificata entra, altrimenti manda il link di attivazione.
 const crypto = require('crypto');
-const { trova, salva, cookieSessione } = require('./_db');
+const { trova, salva, cookieSessione } = require('./db');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ ok: false });
