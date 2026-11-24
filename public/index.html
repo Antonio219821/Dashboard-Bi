@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -8,35 +9,94 @@
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-<header><div class="wrap"><a class="logo" href="/">Il tuo Nome</a><a href="mailto:tua@email.it">Contatti</a></div></header>
+<header>
+  <div class="wrap">
+    <a class="logo" href="/">Il tuo Nome</a>
+    <a href="mailto:tua@email.it">Contatti</a>
+  </div>
+</header>
+
 <main class="wrap">
   <h1>Trasformo i dati in dashboard che si leggono in dieci secondi.</h1>
   <p class="sub">Analista dati con Power BI. Nei progetti spiego obiettivo, dati usati e cosa hanno scoperto.</p>
+
   <section id="accesso">
     <h2>Entra per vedere i progetti</h2>
+
     <form class="gate" id="gate">
       <label for="email">La tua email</label>
-      <input id="email" type="email" required autocomplete="email" placeholder="nome@azienda.it">
+      <input
+        id="email"
+        type="email"
+        required
+        autocomplete="email"
+        placeholder="nome@azienda.it"
+      >
       <button class="btn" type="submit">Entra</button>
-      <small id="msg" role="status">Se sei già qualificato entri subito, altrimenti ti mando un link di attivazione.</small>
+      <small id="msg" role="status">
+        Inserisci la tua email autorizzata per accedere ai progetti.
+      </small>
     </form>
   </section>
 </main>
-<footer><div class="wrap">© 2026 Il tuo Nome</div></footer>
+
+<footer>
+  <div class="wrap">© 2026 Il tuo Nome</div>
+</footer>
+
 <script>
+// Controlla automaticamente se esiste già una sessione valida.
+(async () => {
+  try {
+    const r = await fetch('/progetti', {
+      method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store'
+    });
+
+    if (r.ok && !r.redirected) {
+      window.location.replace('/progetti');
+    }
+  } catch (errore) {
+    console.error('Controllo sessione non riuscito:', errore);
+  }
+})();
+
+// Login tramite email.
 document.getElementById('gate').addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const msg = document.getElementById('msg');
-  msg.textContent = 'Invio in corso…';
+  const email = document.getElementById('email').value.trim();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msg.textContent = 'Inserisci un indirizzo email valido.';
+    return;
+  }
+
+  msg.textContent = 'Verifica in corso…';
+
   try {
     const r = await fetch('/api/richiedi', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: document.getElementById('email').value })
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
     });
+
     const d = await r.json();
-    if (d.entrato) { window.location.href = '/progetti'; return; }
-    msg.textContent = d.ok ? 'Ti ho mandato il link di attivazione: controlla la posta (anche lo spam).' : 'Non sono riuscito a completare la richiesta. Riprova.';
-  } catch { msg.textContent = 'Errore di connessione. Riprova.'; }
+
+    if (d.ok && d.entrato) {
+      window.location.replace('/progetti');
+      return;
+    }
+
+    msg.textContent = d.errore || 'Email non autorizzata. Riprova.';
+
+  } catch (errore) {
+    msg.textContent = 'Errore di connessione. Riprova.';
+    console.error(errore);
+  }
 });
 </script>
 </body>
