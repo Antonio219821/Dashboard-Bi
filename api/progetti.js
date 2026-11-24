@@ -1,7 +1,7 @@
 // Mostra le pagine riservate solo se Supabase dice che l'email è qualificata.
 const fs = require('fs');
 const path = require('path');
-const { leggi } = require('./_auth');
+const { leggi } = require('./auth');
 const { trova } = require('./db');
 
 module.exports = async (req, res) => {
