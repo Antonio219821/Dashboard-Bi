@@ -1,5 +1,5 @@
 // Si apre dal link nella mail: qualifica l'email su Supabase e ti fa entrare.
-const { trova, salva, cookieSessione } = require('./_db');
+const { trova, salva, cookieSessione } = require('./db');
 
 module.exports = async (req, res) => {
   const riga = req.query.token ? await trova('token', req.query.token) : null;
