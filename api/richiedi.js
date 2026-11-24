@@ -1,39 +1,48 @@
-// Riceve l'email: se è già qualificata entra, altrimenti manda il link di attivazione.
-const crypto = require('crypto');
-const { trova, salva, cookieSessione } = require('./db');
+
+const { trova, cookieSessione } = require('./db');
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return res.status(405).json({ ok: false });
-  const email = String((req.body && req.body.email) || '').trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ ok: false });
-
-  const riga = await trova('email', email);
-
-  // Già qualificata: entra subito (metti LINK_SEMPRE=si su Vercel per mandare il link anche a lei)
-  if (riga && riga.qualificata && process.env.LINK_SEMPRE !== 'si') {
-    res.setHeader('Set-Cookie', cookieSessione(email));
-    return res.json({ ok: true, entrato: true });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ ok: false, errore: 'Metodo non consentito' });
   }
 
-  // Altrimenti: crea un token, salvalo su Supabase e manda la mail
-  const token = crypto.randomBytes(24).toString('hex');
-  await salva({
-    email,
-    qualificata: riga ? riga.qualificata : false,
-    token,
-    token_scade: new Date(Date.now() + 15 * 60 * 1000).toISOString()
-  });
-  const link = `https://${req.headers.host}/api/verifica?token=${token}`;
-  const r = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: process.env.MAIL_FROM,
-      to: email,
-      subject: 'Attiva il tuo accesso',
-      html: `<p>Clicca per attivare l'accesso (il link vale 15 minuti):</p><p><a href="${link}">Attiva e entra</a></p>`
-    })
-  });
-  if (!r.ok) return res.status(500).json({ ok: false });
-  res.json({ ok: true, entrato: false });
+  try {
+    const email = String((req.body && req.body.email) || '')
+      .trim()
+      .toLowerCase();
+
+    // Controllo del formato email
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({
+        ok: false,
+        errore: 'Inserisci un indirizzo email valido.'
+      });
+    }
+
+    // Verifica che l'email sia autorizzata
+    const riga = await trova('email', email);
+
+    if (!riga || riga.qualificata !== true) {
+      return res.status(401).json({
+        ok: false,
+        errore: 'Email non registrata o non autorizzata.'
+      });
+    }
+
+    // Crea la sessione
+    res.setHeader('Set-Cookie', cookieSessione(email));
+
+    return res.status(200).json({
+      ok: true,
+      entrato: true
+    });
+
+  } catch (errore) {
+    console.error('Errore login:', errore);
+
+    return res.status(500).json({
+      ok: false,
+      errore: 'Errore durante il login. Riprova.'
+    });
+  }
 };
