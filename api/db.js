@@ -1,5 +1,5 @@
 // Parla con Supabase (tabella "accessi") usando l'API REST. Nessun pacchetto da installare.
-const { crea } = require('./_auth');
+const { crea } = require('./auth');
 const base = () => process.env.SUPABASE_URL + '/rest/v1/accessi';
 const h = () => ({
   apikey: process.env.SUPABASE_SERVICE_KEY,
