@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { leggi } = require('./_auth');
-const { trova } = require('./_db');
+const { trova } = require('./db');
 
 module.exports = async (req, res) => {
   const cookie = (req.headers.cookie || '').split('; ').find(c => c.startsWith('sessione='));
