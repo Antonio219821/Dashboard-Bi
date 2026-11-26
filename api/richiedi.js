@@ -1,4 +1,3 @@
-
 const { trova, cookieSessione } = require('./db');
 
 module.exports = async (req, res) => {
