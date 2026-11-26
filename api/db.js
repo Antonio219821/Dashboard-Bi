@@ -1,4 +1,3 @@
-
 // Collegamento a Supabase tramite API REST.
 const { crea } = require('./auth');
 
