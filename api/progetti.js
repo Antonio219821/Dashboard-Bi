@@ -1,4 +1,3 @@
-
 // Mostra le pagine riservate solo se l'email è autorizzata.
 const fs = require('fs');
 const path = require('path');
